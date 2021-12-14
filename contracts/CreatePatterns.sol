@@ -27,6 +27,7 @@ contract CreatePatterns is
     using Counters for Counters.Counter;
     using ERC721BaseStorage for ERC721BaseStorage.Layout;
     using EnumerableMap for EnumerableMap.UintToAddressMap;
+    using EnumerableSet for EnumerableSet.UintSet;
 
     /**
      * @notice Require that the token has not been burned and has been minted
@@ -84,9 +85,24 @@ contract CreatePatterns is
      *
      * - the caller must have the `MINTER_ROLE`.
      */
-    function mint(address to, string memory uri) public virtual {
+    function mint(
+        address to,
+        LibPatterns.CreatorsPatternsMetadata memory metadata
+    ) public payable virtual {
+        address sender = _msgSender();
+        bytes32 structHash = LibPatterns.hash(metadata);
+        address creator = metadata.creator;
+        if (creator != sender) {
+            require(metadata.price == msg.value, "Not enough wei");
+            require(metadata.expiresAt > block.timestamp, "Expired");
+            LibPatterns.validateSignature(
+                creator,
+                structHash,
+                metadata.signature
+            );
+        }
         require(
-            hasRole(LibPatterns.MINTER_ROLE, _msgSender()),
+            hasRole(LibPatterns.MINTER_ROLE, creator),
             "CreatePatterns: must have minter role"
         );
 
@@ -94,11 +110,33 @@ contract CreatePatterns is
         // We cannot just use balanceOf to create the new tokenId because tokens
         // can be burned (destroyed), so we need a separate counter.
         uint256 currentId = l.tokenIdTracker.current();
-        _mint(to, currentId);
+        _mint(to, currentId, creator);
         l.tokenIdTracker.increment();
-        setRoyalties(currentId, payable(to), 1000);
+        _setRoyalties(currentId, payable(creator), 1000);
 
-        _setTokenURI(currentId, uri);
+        _setTokenURI(currentId, metadata.tokenURI);
+    }
+
+    function _mint(
+        address to,
+        uint256 tokenId,
+        address minter
+    ) internal virtual {
+        require(to != address(0), "ERC721: mint to the zero address");
+        ERC721BaseStorage.Layout storage l = ERC721BaseStorage.layout();
+        require(!l.exists(tokenId), "ERC721: token already minted");
+
+        _beforeTokenTransfer(address(0), to, tokenId);
+
+        l.holderTokens[to].add(tokenId);
+        l.tokenOwners.set(tokenId, to);
+
+        if (minter != to) {
+            emit Transfer(address(0), minter, tokenId);
+            emit Transfer(minter, to, tokenId);
+        } else {
+            emit Transfer(address(0), to, tokenId);
+        }
     }
 
     /**

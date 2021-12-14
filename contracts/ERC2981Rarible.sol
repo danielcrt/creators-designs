@@ -11,6 +11,18 @@ contract ERC2981Rarible is Ownable, RoyaltiesV2Impl {
         address payable _royaltiesReceipientAddress,
         uint96 _percentageBasisPoints
     ) public onlyOwner {
+        _setRoyalties(
+            _tokenId,
+            _royaltiesReceipientAddress,
+            _percentageBasisPoints
+        );
+    }
+
+    function _setRoyalties(
+        uint256 _tokenId,
+        address payable _royaltiesReceipientAddress,
+        uint96 _percentageBasisPoints
+    ) internal virtual {
         LibPart.Part[] memory _royalties = new LibPart.Part[](1);
         _royalties[0].value = _percentageBasisPoints;
         _royalties[0].account = _royaltiesReceipientAddress;
