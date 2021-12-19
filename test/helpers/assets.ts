@@ -2,7 +2,6 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { BigNumber, Bytes } from "ethers";
 import { ethers } from "hardhat";
 
-
 export type CreatorsMetadata = {
     tokenId: string;
     tokenURI: string;

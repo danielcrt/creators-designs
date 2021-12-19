@@ -8,7 +8,7 @@ import chaiAsPromised from "chai-as-promised";
 import { CreatePatterns } from "../typechain";
 import { Bytes } from "ethers";
 import { latestTime } from "./helpers/latestTime";
-import { increaseTime, increaseTimeTo } from "./helpers/increaseTime";
+import { increaseTimeTo } from "./helpers/increaseTime";
 chai.use(chaiAsPromised)
 
 describe("CreatePatterns", function () {
