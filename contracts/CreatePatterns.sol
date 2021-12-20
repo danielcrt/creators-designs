@@ -87,33 +87,36 @@ contract CreatePatterns is
      */
     function mint(
         address to,
-        LibPatterns.CreatorsPatternsMetadata memory metadata
+        LibPatterns.CreatorsPatternsMetadata calldata metadata
     ) public payable virtual {
         address sender = _msgSender();
         bytes32 structHash = LibPatterns.hash(metadata);
         address creator = metadata.creator;
+        LibPatterns.Layout storage l = LibPatterns.layout();
+
         if (creator != sender) {
             require(metadata.price == msg.value, "Not enough wei");
             require(metadata.expiresAt > block.timestamp, "Expired");
-            LibPatterns.validateSignature(
-                creator,
-                structHash,
-                metadata.signature
+            bytes memory signature = metadata.signature;
+            require(
+                l.unlistedSignatures[signature] == false,
+                "Signature has been revoked by owner"
             );
+            LibPatterns.validateSignature(creator, structHash, signature);
+            l.unlistedSignatures[signature] = true;
         }
         require(
             hasRole(LibPatterns.MINTER_ROLE, creator),
             "CreatePatterns: must have minter role"
         );
 
-        LibPatterns.Layout storage l = LibPatterns.layout();
         // We cannot just use balanceOf to create the new tokenId because tokens
         // can be burned (destroyed), so we need a separate counter.
         uint256 currentId = l.tokenIdTracker.current();
         _mint(to, currentId, creator);
         l.tokenIdTracker.increment();
-        _setRoyalties(currentId, payable(creator), 1000);
 
+        _setRoyalties(currentId, payable(creator), 1000);
         _setTokenURI(currentId, metadata.tokenURI);
     }
 

@@ -184,6 +184,21 @@ describe("CreatePatterns", function () {
     await expect(token.connect(account1).mint(account1.address, assetMetadata, { value: price })).to.be.rejected;
   });
 
+  it("Cannot lazy mint twice with the same signature", async function () {
+    const price = ethers.utils.parseEther('0.0005');
+    const assetMetadata = {
+      tokenId: '5a457352-fa9a-494d-b709-93dccf931bf7',
+      tokenURI: '123',
+      price: price,
+      creator: deployer.address,
+      expiresAt: await latestTime() + 3600 * 24,
+    } as CreatorsMetadata;
+
+    assetMetadata.signature = await getAssetSignature(assetMetadata, deployer);
+    await token.connect(account1).mint(account1.address, assetMetadata, { value: price });
+    await expect(token.connect(account1).mint(account1.address, assetMetadata, { value: price })).to.be.rejected;
+  });
+
   async function getAssetSignature(asset: CreatorsMetadata, signer: SignerWithAddress): Promise<Bytes> {
     return ethers.utils.arrayify(
       await signAsset(asset, signer, eip712Name, token.address)

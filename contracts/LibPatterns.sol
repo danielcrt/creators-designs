@@ -20,6 +20,7 @@ library LibPatterns {
     struct Layout {
         Counters.Counter tokenIdTracker;
         mapping(uint256 => address) royalties;
+        mapping(bytes => bool) unlistedSignatures;
     }
 
     struct CreatorsPatternsMetadata {
