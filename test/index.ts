@@ -138,7 +138,7 @@ describe("CreatePatterns", function () {
   it("Can lazy mint", async function () {
     const price = ethers.utils.parseEther('0.0005');
     const assetMetadata = {
-      tokenId: '5a457352-fa9a-494d-b709-93dccf931bf7',
+      tokenId: 1,
       tokenURI: '123',
       price: price,
       creator: deployer.address,
@@ -148,7 +148,8 @@ describe("CreatePatterns", function () {
     assetMetadata.signature = await getAssetSignature(assetMetadata, deployer);
     await expect(token.connect(account1).mint(account1.address, assetMetadata, { value: price }))
       .to.emit(token, 'Transfer').withArgs(ethers.constants.AddressZero, deployer.address, 0)
-      .to.emit(token, 'Transfer').withArgs(deployer.address, account1.address, 0);
+      .to.emit(token, 'Transfer').withArgs(deployer.address, account1.address, 0)
+      .to.emit(token, 'TokenPurchase').withArgs(assetMetadata.tokenId, 0, account1.address, price);
 
     await expect(token.balanceOf(account1.address)).to.eventually.equal(1);
   });
@@ -156,7 +157,7 @@ describe("CreatePatterns", function () {
   it("Lazy mint denied. Not enough ETH", async function () {
     const price = ethers.utils.parseEther('0.0005');
     const assetMetadata = {
-      tokenId: '5a457352-fa9a-494d-b709-93dccf931bf7',
+      tokenId: 1,
       tokenURI: '123',
       price: price,
       creator: deployer.address,
@@ -171,7 +172,7 @@ describe("CreatePatterns", function () {
     const price = ethers.utils.parseEther('0.0005');
     const expiresAfter = Date.now() + 3600 * 24;
     const assetMetadata = {
-      tokenId: '5a457352-fa9a-494d-b709-93dccf931bf7',
+      tokenId: 1,
       tokenURI: '123',
       price: price,
       creator: deployer.address,
@@ -187,7 +188,7 @@ describe("CreatePatterns", function () {
   it("Cannot lazy mint twice with the same signature", async function () {
     const price = ethers.utils.parseEther('0.0005');
     const assetMetadata = {
-      tokenId: '5a457352-fa9a-494d-b709-93dccf931bf7',
+      tokenId: 1,
       tokenURI: '123',
       price: price,
       creator: deployer.address,

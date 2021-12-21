@@ -98,10 +98,7 @@ contract CreatePatterns is
             require(metadata.price == msg.value, "Not enough wei");
             require(metadata.expiresAt > block.timestamp, "Expired");
             bytes memory signature = metadata.signature;
-            require(
-                l.unlistedSignatures[signature] == false,
-                "Signature has been revoked by owner"
-            );
+            require(l.unlistedSignatures[signature] == false, "Already minted");
             LibPatterns.validateSignature(creator, structHash, signature);
             l.unlistedSignatures[signature] = true;
         }
@@ -118,6 +115,8 @@ contract CreatePatterns is
 
         _setRoyalties(currentId, payable(creator), 1000);
         _setTokenURI(currentId, metadata.tokenURI);
+
+        emit TokenPurchase(metadata.tokenId, currentId, to, msg.value);
     }
 
     function _mint(

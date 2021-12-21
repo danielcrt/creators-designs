@@ -14,7 +14,7 @@ library LibPatterns {
     string constant SIGNATURE_ERROR = "signature verification error";
     bytes32 public constant MINT_AND_TRANSFER_TYPEHASH =
         keccak256(
-            "CreatorsPatternsMetadata(string tokenId,string tokenURI,address creator,uint256 price,uint256 expiresAt)"
+            "CreatorsPatternsMetadata(uint256 tokenId,string tokenURI,address creator,uint256 price,uint256 expiresAt)"
         );
 
     struct Layout {
@@ -24,7 +24,7 @@ library LibPatterns {
     }
 
     struct CreatorsPatternsMetadata {
-        string tokenId;
+        uint256 tokenId;
         string tokenURI;
         address creator;
         uint256 price;
@@ -41,7 +41,7 @@ library LibPatterns {
             keccak256(
                 abi.encode(
                     MINT_AND_TRANSFER_TYPEHASH,
-                    keccak256(bytes(data.tokenId)),
+                    data.tokenId,
                     keccak256(bytes(data.tokenURI)),
                     data.creator,
                     data.price,

@@ -27,4 +27,11 @@ abstract contract CreatePatternsInternal {
     function _setBaseURI(string memory baseURI_) internal virtual {
         ERC721MetadataStorage.layout().baseURI = baseURI_;
     }
+
+    event TokenPurchase(
+        uint256 indexed offChainId,
+        uint256 indexed tokenId,
+        address buyer,
+        uint256 price
+    );
 }

@@ -3,7 +3,7 @@ import { BigNumber, Bytes } from "ethers";
 import { ethers } from "hardhat";
 
 export type CreatorsMetadata = {
-    tokenId: string;
+    tokenId: number;
     tokenURI: string;
     creator: string;
     price: BigNumber;
@@ -12,7 +12,7 @@ export type CreatorsMetadata = {
 }
 
 const defaultCreatorsMetadata: CreatorsMetadata = {
-    tokenId: '',
+    tokenId: 0,
     tokenURI: '',
     creator: '',
     price: BigNumber.from(0),
@@ -22,7 +22,7 @@ const defaultCreatorsMetadata: CreatorsMetadata = {
 
 const Types = {
     CreatorsPatternsMetadata: [
-        { name: 'tokenId', type: 'string' },
+        { name: 'tokenId', type: 'uint256' },
         { name: 'tokenURI', type: 'string' },
         { name: 'creator', type: 'address' },
         { name: 'price', type: 'uint256' },
