@@ -2,8 +2,8 @@
 pragma solidity ^0.8.0;
 pragma experimental ABIEncoderV2;
 
-import "./CreatePatternsInternal.sol";
-import "./LibPatterns.sol";
+import "./CreatorsDesignsInternal.sol";
+import "./LibCreatorsDesigns.sol";
 import "./access/AccessControlEnumerable.sol";
 import "./security/Pausable.sol";
 import "@solidstate/contracts/access/Ownable.sol";
@@ -16,8 +16,8 @@ import "./@rarible/royalties/contracts/LibPart.sol";
 import "./@rarible/royalties/contracts/LibRoyaltiesV2.sol";
 import "./ERC2981Rarible.sol";
 
-contract CreatePatterns is
-    CreatePatternsInternal,
+contract CreatorsDesigns is
+    CreatorsDesignsInternal,
     ReentrancyGuard,
     ERC2981Rarible,
     AccessControlEnumerable,
@@ -35,7 +35,7 @@ contract CreatePatterns is
     modifier onlyExistingToken(uint256 tokenId) {
         require(
             ERC721BaseStorage.layout().exists(tokenId),
-            "CreatePatterns: nonexistent token"
+            "CreatorsDesigns: nonexistent token"
         );
         _;
     }
@@ -47,7 +47,7 @@ contract CreatePatterns is
     modifier onlyApprovedOrOwner(address spender, uint256 tokenId) {
         require(
             _isApprovedOrOwner(spender, tokenId),
-            "CreatePatterns: Only approved or owner"
+            "CreatorsDesigns: Only approved or owner"
         );
         _;
     }
@@ -57,8 +57,8 @@ contract CreatePatterns is
      */
     modifier onlyTokenCreated(uint256 tokenId) {
         require(
-            LibPatterns.layout().tokenIdTracker.current() > tokenId,
-            "CreatePatterns: token with that id does not exist"
+            LibCreatorsDesigns.layout().tokenIdTracker.current() > tokenId,
+            "CreatorsDesigns: token with that id does not exist"
         );
         _;
     }
@@ -69,7 +69,7 @@ contract CreatePatterns is
     modifier onlyValidURI(string memory uri) {
         require(
             bytes(uri).length != 0,
-            "CreatePatterns: specified uri must be non-empty"
+            "CreatorsDesigns: specified uri must be non-empty"
         );
         _;
     }
@@ -87,24 +87,24 @@ contract CreatePatterns is
      */
     function mint(
         address to,
-        LibPatterns.CreatorsPatternsMetadata calldata metadata
+        LibCreatorsDesigns.CreatorsDesignsMetadata calldata metadata
     ) public payable virtual {
         address sender = _msgSender();
-        bytes32 structHash = LibPatterns.hash(metadata);
+        bytes32 structHash = LibCreatorsDesigns.hash(metadata);
         address creator = metadata.creator;
-        LibPatterns.Layout storage l = LibPatterns.layout();
+        LibCreatorsDesigns.Layout storage l = LibCreatorsDesigns.layout();
 
         if (creator != sender) {
             require(metadata.price == msg.value, "Not enough wei");
             require(metadata.expiresAt > block.timestamp, "Expired");
             bytes memory signature = metadata.signature;
             require(l.unlistedSignatures[signature] == false, "Already minted");
-            LibPatterns.validateSignature(creator, structHash, signature);
+            LibCreatorsDesigns.validateSignature(creator, structHash, signature);
             l.unlistedSignatures[signature] = true;
         }
         require(
-            hasRole(LibPatterns.MINTER_ROLE, creator),
-            "CreatePatterns: must have minter role"
+            hasRole(LibCreatorsDesigns.MINTER_ROLE, creator),
+            "CreatorsDesigns: must have minter role"
         );
 
         // We cannot just use balanceOf to create the new tokenId because tokens
@@ -152,8 +152,8 @@ contract CreatePatterns is
      */
     function pause() public virtual {
         require(
-            hasRole(LibPatterns.PAUSER_ROLE, _msgSender()),
-            "CreatePatterns: must have pauser role to pause"
+            hasRole(LibCreatorsDesigns.PAUSER_ROLE, _msgSender()),
+            "CreatorsDesigns: must have pauser role to pause"
         );
         _pause();
     }
@@ -169,8 +169,8 @@ contract CreatePatterns is
      */
     function unpause() public virtual {
         require(
-            hasRole(LibPatterns.PAUSER_ROLE, _msgSender()),
-            "CreatePatterns: must have pauser role to unpause"
+            hasRole(LibCreatorsDesigns.PAUSER_ROLE, _msgSender()),
+            "CreatorsDesigns: must have pauser role to unpause"
         );
         _unpause();
     }
@@ -186,7 +186,7 @@ contract CreatePatterns is
         //solhint-disable-next-line max-line-length
         require(
             _isApprovedOrOwner(_msgSender(), tokenId),
-            "CreatePatterns: caller is not owner nor approved"
+            "CreatorsDesigns: caller is not owner nor approved"
         );
         _burn(tokenId);
 

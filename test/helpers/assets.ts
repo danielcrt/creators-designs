@@ -2,8 +2,8 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { BigNumber, Bytes } from "ethers";
 import { ethers } from "hardhat";
 
-export type CreatorsMetadata = {
-    tokenId: number;
+export type CreatorsDesignsMetadata = {
+    tokenId: BigNumber;
     tokenURI: string;
     creator: string;
     price: BigNumber;
@@ -11,8 +11,8 @@ export type CreatorsMetadata = {
     signature: Bytes;
 }
 
-const defaultCreatorsMetadata: CreatorsMetadata = {
-    tokenId: 0,
+const defaultCreatorsMetadata: CreatorsDesignsMetadata = {
+    tokenId: BigNumber.from(0),
     tokenURI: '',
     creator: '',
     price: BigNumber.from(0),
@@ -21,7 +21,7 @@ const defaultCreatorsMetadata: CreatorsMetadata = {
 }
 
 const Types = {
-    CreatorsPatternsMetadata: [
+    CreatorsDesignsMetadata: [
         { name: 'tokenId', type: 'uint256' },
         { name: 'tokenURI', type: 'string' },
         { name: 'creator', type: 'address' },
@@ -30,13 +30,13 @@ const Types = {
     ]
 };
 
-async function signAsset(asset: CreatorsMetadata, account: SignerWithAddress, eip712Name: string, verifyingContract: string): Promise<string> {
+async function signAsset(asset: CreatorsDesignsMetadata, account: SignerWithAddress, eip712Name: string, verifyingContract: string): Promise<string> {
     const { chainId } = await ethers.provider.getNetwork();
 
     return (await account._signTypedData(
         {
             name: eip712Name,
-            version: "1",
+            version: '1',
             chainId,
             verifyingContract
         }, Types, asset));

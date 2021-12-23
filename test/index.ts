@@ -3,42 +3,42 @@ import * as chai from "chai";
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { deployDiamond } from "../scripts/libraries/diamond";
-import { CreatorsMetadata, defaultCreatorsMetadata, signAsset } from "./helpers/assets";
+import { CreatorsDesignsMetadata, defaultCreatorsMetadata, signAsset } from "./helpers/assets";
 import chaiAsPromised from "chai-as-promised";
-import { CreatePatterns } from "../typechain";
-import { Bytes } from "ethers";
+import { BigNumber, Bytes } from "ethers";
 import { latestTime } from "./helpers/latestTime";
 import { increaseTimeTo } from "./helpers/increaseTime";
+import { CreatorsDesigns } from "../typechain/CreatorsDesigns";
 chai.use(chaiAsPromised)
 
-describe("CreatePatterns", function () {
-  const name = 'CreatePatterns';
+describe("CreatorsDesigns", function () {
+  const name = 'CreatorsDesigns';
   const eip712Name = name;
   const symbol = 'SYMBOL';
   const MINTER_ROLE = ethers.utils.solidityKeccak256(["string"], ["MINTER_ROLE"]);
   const PAUSER_ROLE = ethers.utils.solidityKeccak256(["string"], ["PAUSER_ROLE"]);
   const tokenURI = '<token_uri>';
   const baseUri = 'ipfs://';
-  const defaultToken: CreatorsMetadata = {
+  const defaultToken: CreatorsDesignsMetadata = {
     ...defaultCreatorsMetadata,
     tokenURI
   };
 
   let [deployer, account1]: SignerWithAddress[] = [];
-  let token: CreatePatterns;
+  let token: CreatorsDesigns;
 
   this.beforeEach(async () => {
     [deployer, account1] = await ethers.getSigners();
     defaultToken.creator = deployer.address;
 
     token = await deployDiamond(
-      'CreatePatterns',
-      'CreatePatternsInit',
-      '__CreatePatterns_init',
+      'CreatorsDesigns',
+      'CreatorsDesignsInit',
+      '__CreatorsDesigns_init',
       [
         name, symbol
       ]
-    ) as CreatePatterns;
+    ) as CreatorsDesigns;
   });
 
   it("Should have the right metadata", async function () {
@@ -138,12 +138,12 @@ describe("CreatePatterns", function () {
   it("Can lazy mint", async function () {
     const price = ethers.utils.parseEther('0.0005');
     const assetMetadata = {
-      tokenId: 1,
+      tokenId: BigNumber.from(1),
       tokenURI: '123',
       price: price,
       creator: deployer.address,
       expiresAt: Date.now() + 3600 * 24,
-    } as CreatorsMetadata;
+    } as CreatorsDesignsMetadata;
 
     assetMetadata.signature = await getAssetSignature(assetMetadata, deployer);
     await expect(token.connect(account1).mint(account1.address, assetMetadata, { value: price }))
@@ -157,12 +157,12 @@ describe("CreatePatterns", function () {
   it("Lazy mint denied. Not enough ETH", async function () {
     const price = ethers.utils.parseEther('0.0005');
     const assetMetadata = {
-      tokenId: 1,
+      tokenId: BigNumber.from(1),
       tokenURI: '123',
       price: price,
       creator: deployer.address,
       expiresAt: Date.now() + 3600 * 24,
-    } as CreatorsMetadata;
+    } as CreatorsDesignsMetadata;
 
     assetMetadata.signature = await getAssetSignature(assetMetadata, deployer);
     await expect(token.connect(account1).mint(account1.address, assetMetadata, { value: price.sub(1) })).to.be.rejected;
@@ -172,12 +172,12 @@ describe("CreatePatterns", function () {
     const price = ethers.utils.parseEther('0.0005');
     const expiresAfter = Date.now() + 3600 * 24;
     const assetMetadata = {
-      tokenId: 1,
+      tokenId: BigNumber.from(1),
       tokenURI: '123',
       price: price,
       creator: deployer.address,
       expiresAt: Date.now() + 3600 * 24,
-    } as CreatorsMetadata;
+    } as CreatorsDesignsMetadata;
 
     await increaseTimeTo(await latestTime() + expiresAfter + 1);
 
@@ -188,19 +188,19 @@ describe("CreatePatterns", function () {
   it("Cannot lazy mint twice with the same signature", async function () {
     const price = ethers.utils.parseEther('0.0005');
     const assetMetadata = {
-      tokenId: 1,
+      tokenId: BigNumber.from(1),
       tokenURI: '123',
       price: price,
       creator: deployer.address,
       expiresAt: await latestTime() + 3600 * 24,
-    } as CreatorsMetadata;
+    } as CreatorsDesignsMetadata;
 
     assetMetadata.signature = await getAssetSignature(assetMetadata, deployer);
     await token.connect(account1).mint(account1.address, assetMetadata, { value: price });
     await expect(token.connect(account1).mint(account1.address, assetMetadata, { value: price })).to.be.rejected;
   });
 
-  async function getAssetSignature(asset: CreatorsMetadata, signer: SignerWithAddress): Promise<Bytes> {
+  async function getAssetSignature(asset: CreatorsDesignsMetadata, signer: SignerWithAddress): Promise<Bytes> {
     return ethers.utils.arrayify(
       await signAsset(asset, signer, eip712Name, token.address)
     );

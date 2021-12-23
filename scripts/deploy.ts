@@ -6,13 +6,13 @@
 import { deployDiamond } from "./libraries/diamond";
 
 async function main() {
-  const name = "Create Patterns";
-  const symbol = "CPT";
+  const name = "CreatorsDesigns";
+  const symbol = "CDS";
 
   const token = await deployDiamond(
-    'CreatePatterns',
-    'CreatePatternsInit',
-    '__CreatePatterns_init',
+    'CreatorsDesigns',
+    'CreatorsDesignsInit',
+    '__CreatorsDesigns_init',
     [
       name, symbol
     ]
