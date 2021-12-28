@@ -45,6 +45,9 @@ const config: HardhatUserConfig = {
     gasPrice: 41_000_000_000,
     token: 'ETH'
   },
+  etherscan: {
+    apiKey: process.env.ETHERSCAN_API_KEY
+  }
 };
 
 export default config;
