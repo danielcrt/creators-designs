@@ -10,7 +10,6 @@ import "@solidstate/contracts/access/Ownable.sol";
 import "@solidstate/contracts/token/ERC721/ERC721.sol";
 import "@solidstate/contracts/token/ERC721/metadata/ERC721MetadataStorage.sol";
 import "@solidstate/contracts/token/ERC721/base/ERC721BaseStorage.sol";
-import "@solidstate/contracts/utils/ReentrancyGuard.sol";
 import "./@rarible/royalties/contracts/impl/RoyaltiesV2Impl.sol";
 import "./@rarible/royalties/contracts/LibPart.sol";
 import "./@rarible/royalties/contracts/LibRoyaltiesV2.sol";
@@ -18,7 +17,6 @@ import "./ERC2981Rarible.sol";
 
 contract CreatorsDesigns is
     CreatorsDesignsInternal,
-    ReentrancyGuard,
     ERC2981Rarible,
     AccessControlEnumerable,
     ERC721,
@@ -30,35 +28,13 @@ contract CreatorsDesigns is
     using EnumerableSet for EnumerableSet.UintSet;
 
     /**
-     * @notice Require that the token has not been burned and has been minted
-     */
-    modifier onlyExistingToken(uint256 tokenId) {
-        require(
-            ERC721BaseStorage.layout().exists(tokenId),
-            "CreatorsDesigns: nonexistent token"
-        );
-        _;
-    }
-
-    /**
      * @notice Ensure that the provided spender is the approved or the owner of
      * the media for the specified tokenId
      */
     modifier onlyApprovedOrOwner(address spender, uint256 tokenId) {
         require(
             _isApprovedOrOwner(spender, tokenId),
-            "CreatorsDesigns: Only approved or owner"
-        );
-        _;
-    }
-
-    /**
-     * @notice Ensure the token has been created (even if it has been burned)
-     */
-    modifier onlyTokenCreated(uint256 tokenId) {
-        require(
-            LibCreatorsDesigns.layout().tokenIdTracker.current() > tokenId,
-            "CreatorsDesigns: token with that id does not exist"
+            "Only approved or owner"
         );
         _;
     }
@@ -69,7 +45,7 @@ contract CreatorsDesigns is
     modifier onlyValidURI(string memory uri) {
         require(
             bytes(uri).length != 0,
-            "CreatorsDesigns: specified uri must be non-empty"
+            "specified uri must be non-empty"
         );
         _;
     }
@@ -104,7 +80,7 @@ contract CreatorsDesigns is
         }
         require(
             hasRole(LibCreatorsDesigns.MINTER_ROLE, creator),
-            "CreatorsDesigns: must have minter role"
+            "must have minter role"
         );
 
         // We cannot just use balanceOf to create the new tokenId because tokens
@@ -124,9 +100,9 @@ contract CreatorsDesigns is
         uint256 tokenId,
         address minter
     ) internal virtual {
-        require(to != address(0), "ERC721: mint to the zero address");
+        require(to != address(0), "mint to the zero address");
         ERC721BaseStorage.Layout storage l = ERC721BaseStorage.layout();
-        require(!l.exists(tokenId), "ERC721: token already minted");
+        require(!l.exists(tokenId), "token already minted");
 
         _beforeTokenTransfer(address(0), to, tokenId);
 
@@ -153,7 +129,7 @@ contract CreatorsDesigns is
     function pause() public virtual {
         require(
             hasRole(LibCreatorsDesigns.PAUSER_ROLE, _msgSender()),
-            "CreatorsDesigns: must have pauser role to pause"
+            "must have pauser role to pause"
         );
         _pause();
     }
@@ -170,7 +146,7 @@ contract CreatorsDesigns is
     function unpause() public virtual {
         require(
             hasRole(LibCreatorsDesigns.PAUSER_ROLE, _msgSender()),
-            "CreatorsDesigns: must have pauser role to unpause"
+            "must have pauser role to unpause"
         );
         _unpause();
     }
@@ -186,7 +162,7 @@ contract CreatorsDesigns is
         //solhint-disable-next-line max-line-length
         require(
             _isApprovedOrOwner(_msgSender(), tokenId),
-            "CreatorsDesigns: caller is not owner nor approved"
+            "caller is not owner nor approved"
         );
         _burn(tokenId);
 
@@ -198,7 +174,6 @@ contract CreatorsDesigns is
 
     function setTokenURI(uint256 tokenId, string calldata tokenURI)
         external
-        nonReentrant
         onlyApprovedOrOwner(msg.sender, tokenId)
         onlyValidURI(tokenURI)
     {
